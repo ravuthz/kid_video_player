@@ -43,7 +43,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
     if (!videoRef.current || !audioRef.current) return;
     videoRef.current.currentTime = 0;
     audioRef.current.currentTime = 0;
-    togglePlay();
+    
+    // Ensure it starts playing if it was paused
+    const vPlay = videoRef.current.play();
+    const aPlay = audioRef.current.play();
+    Promise.all([vPlay, aPlay]).catch(() => setPlayerState(PlayerState.PAUSED));
+    setPlayerState(PlayerState.PLAYING);
   };
 
   const handleTimeUpdate = () => {
@@ -51,7 +56,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
       const p = (videoRef.current.currentTime / videoRef.current.duration) * 100;
       setProgress(p || 0);
     }
-    // Periodic Audio/Video Sync logic
+    // Sync logic: periodically match audio to video time
     if (videoRef.current && audioRef.current && !videoRef.current.paused) {
       const diff = videoRef.current.currentTime - audioRef.current.currentTime;
       if (Math.abs(diff) > 0.2) {
@@ -60,7 +65,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
     }
   };
 
-  // Fixed circular dependency by logging only safe error information
   const onMediaError = useCallback((e: any) => {
     const errorMsg = "Could not load video source. The URL might be restricted or unsupported.";
     console.error("Media Error Event:", e.type || "Error occurred");
@@ -77,14 +81,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
     setPlayerState(PlayerState.LOADING);
     setProgress(0);
 
-    // Explicitly load sources to ensure clean state
     video.src = content.videoUrl;
     audio.src = content.voiceUrl;
     video.load();
     audio.load();
 
     const handleCanPlay = async () => {
-      // Check if both elements are sufficiently loaded
       if (video.readyState >= 3 && audio.readyState >= 3) {
         try {
           await video.play();
@@ -146,7 +148,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
         <div className="absolute inset-0 z-[60] flex items-center justify-center p-12 text-center bg-black/90 backdrop-blur-2xl">
           <div className="flex flex-col items-center gap-8">
             <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
-              <i className="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+              <i className="fa-solid fa-triangle-exclamation text-red-500 text-3xl"></i>
             </div>
             <div className="space-y-3">
               <h3 className="text-white text-lg font-bold uppercase tracking-widest">Load Failure</h3>
@@ -191,25 +193,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
               isFirst ? 'opacity-10 cursor-not-allowed' : 'hover:bg-white/10 active:bg-white/20'
             }`}
           >
-            <i className="fas fa-chevron-left text-base"></i>
+            <i className="fa-solid fa-chevron-left text-base"></i>
           </button>
 
           <div className="flex items-center gap-6">
-            <button 
-              onClick={handleReplay}
-              className="w-14 h-14 flex items-center justify-center rounded-2xl glass-panel text-white/50 hover:text-white transition-all active:scale-90"
-            >
-              <i className="fas fa-redo text-base"></i>
-            </button>
-
             <button 
               onClick={togglePlay}
               className="w-24 h-24 flex items-center justify-center rounded-full bg-white text-black hover:scale-110 active:scale-90 transition-all shadow-2xl ring-8 ring-white/5"
             >
               {playerState === PlayerState.PLAYING ? (
-                <i className="fas fa-pause text-3xl"></i>
+                <i className="fa-solid fa-pause text-3xl"></i>
               ) : (
-                <i className="fas fa-play text-3xl ml-1"></i>
+                <i className="fa-solid fa-play text-3xl ml-1"></i>
               )}
             </button>
           </div>
@@ -221,18 +216,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ content, onNext, onBack, isFi
               isLast ? 'opacity-10 cursor-not-allowed' : 'hover:bg-white/10 active:bg-white/20'
             }`}
           >
-            <i className="fas fa-chevron-right text-base"></i>
+            <i className="fa-solid fa-chevron-right text-base"></i>
           </button>
         </div>
       </div>
 
-      {/* Side Utilities */}
+      {/* Side Utilities - Replaced volume with Replay */}
       <div className="absolute right-6 bottom-56 flex flex-col gap-4 z-40">
         <button 
-          onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
-          className={`w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all glass-panel border-white/5 ${isMuted ? 'text-red-400' : 'text-white'}`}
+          onClick={handleReplay}
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-white transition-all glass-panel border-white/5 hover:bg-white/10 active:scale-90"
+          title="Replay"
         >
-          <i className={`fas ${isMuted ? 'fa-volume-mute' : 'fa-volume-up'} text-sm`}></i>
+          <i className="fa-solid fa-rotate-right text-sm"></i>
         </button>
       </div>
 
