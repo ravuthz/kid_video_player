@@ -1,0 +1,7 @@
+{
+  "name": "VocalStream Player",
+  "description": "A high-performance 9:16 video player with synchronized voice-over and subtitle rendering.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
