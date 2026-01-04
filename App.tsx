@@ -1,43 +1,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { PlayerData } from './types';
+import { MOCK_DATA } from './data';
 import VideoPlayer from './components/VideoPlayer';
-
-// Using more standard, reliable sample MP4s from public CDNs to prevent "unsupported source" errors.
-const MOCK_DATA: PlayerData = {
-  contents: [
-    {
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-      voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      subtitleText: 'A story about a large, friendly rabbit encountering mischievous forest creatures in a vibrant meadow.',
-      title: 'Big Buck Bunny'
-    },
-    {
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-      subtitleText: 'Exploring a strange mechanical world filled with wonder and surreal architecture.',
-      title: 'Elephant\'s Dream'
-    },
-    {
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-      subtitleText: 'Experience the heat and energy of a roaring flame, a powerful force of nature captured in high definition.',
-      title: 'Blazing Trails'
-    },
-    {
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-      voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-      subtitleText: 'Breaking free and finding solitude in the great outdoors. The ultimate escape from the city.',
-      title: 'Great Escape'
-    },
-    {
-      videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-      voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
-      subtitleText: 'Celebrating the small moments of joy and playfulness that make life truly wonderful.',
-      title: 'Moments of Joy'
-    }
-  ]
-};
 
 const App: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,20 +31,23 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-[#050505]">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 pointer-events-none">
-         <div 
-          className="absolute inset-[-50%] opacity-15 blur-[160px] transition-all duration-1000 animate-pulse"
-          style={{
-            background: currentIndex % 2 === 0 
-              ? 'radial-gradient(circle at top right, #4338ca, transparent)' 
-              : 'radial-gradient(circle at bottom left, #db2777, transparent)'
-          }}
-        />
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-zinc-900">
+      {/* Immersive 16:9 Cute Background Video */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          className="w-full h-full object-cover scale-110 opacity-90 brightness-90 transition-all duration-1000"
+        >
+          <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4" />
+        </video>
+        {/* Subtle Vignette Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
       </div>
 
-      <div className="video-wrapper">
+      <div className="video-wrapper z-10">
         <VideoPlayer 
           content={data.contents[currentIndex]} 
           onNext={handleNext}
